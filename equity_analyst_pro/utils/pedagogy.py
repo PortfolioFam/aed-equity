@@ -1,0 +1,58 @@
+PEDAGOGY_CONTENT = {
+    "ROIC": {
+        "definition": "Le ROIC mesure le rendement généré sur le capital investi dans l'activité.",
+        "intuition": "Un bon business crée de la valeur si son ROIC dépasse durablement son coût du capital.",
+        "formula": "NOPAT / Capital investi",
+        "practical_use": "Permet d'évaluer la qualité économique du modèle et la discipline d'allocation du capital.",
+        "common_mistake": "Le confondre avec le ROE, qui dépend davantage de la structure de financement.",
+    },
+    "ROE": {
+        "definition": "Le ROE mesure la rentabilité des capitaux propres.",
+        "intuition": "Utile, mais à lire avec prudence car il peut être artificiellement gonflé par le levier.",
+        "formula": "Résultat net / Capitaux propres",
+        "practical_use": "Aide à lire la rentabilité pour l'actionnaire, surtout avec une analyse du bilan.",
+        "common_mistake": "Le prendre isolément sans regarder la dette ou les rachats d'actions.",
+    },
+    "DCF": {
+        "definition": "Le DCF estime la valeur actuelle des flux de trésorerie futurs.",
+        "intuition": "La valeur dépend surtout des cash-flows, de leur croissance et du taux d'actualisation.",
+        "formula": "Somme des FCF actualisés + valeur terminale actualisée",
+        "practical_use": "Très utile pour tester la sensibilité d'un dossier aux hypothèses clés.",
+        "common_mistake": "Faire semblant d'obtenir une précision élevée avec des hypothèses très fragiles.",
+    },
+    "WACC": {
+        "definition": "Le WACC est le coût moyen pondéré du capital.",
+        "intuition": "Plus le risque perçu est élevé, plus le taux d'actualisation monte, et plus la valeur baisse.",
+        "formula": "Coût des fonds propres pondéré + coût de la dette après impôt pondéré",
+        "practical_use": "Sert dans les DCF et la lecture de création de valeur face au ROIC.",
+        "common_mistake": "Utiliser un WACC arbitraire sans cohérence sectorielle ou géographique.",
+    },
+    "Sharpe": {
+        "definition": "Le ratio de Sharpe mesure le rendement excédentaire par unité de risque total.",
+        "intuition": "Il dit combien de rendement tu obtiens pour un niveau donné de volatilité.",
+        "formula": "(Rendement portefeuille - taux sans risque) / volatilité",
+        "practical_use": "Permet de comparer des portefeuilles sur une base rendement/risque.",
+        "common_mistake": "Le lire sans tenir compte du contexte de marché ou de distributions non normales.",
+    },
+    "Markowitz": {
+        "definition": "Cadre théorique d'optimisation portefeuille basé sur rendement espéré, volatilité et covariance.",
+        "intuition": "La diversification ne dépend pas seulement du nombre de titres mais de leur corrélation entre eux.",
+        "formula": "Minimisation de variance pour un niveau de rendement donné",
+        "practical_use": "Sert à penser la construction portefeuille, même si les hypothèses sont simplificatrices.",
+        "common_mistake": "Croire que l'optimisation mathématique remplace le jugement fondamental.",
+    },
+    "VaR": {
+        "definition": "La Value at Risk estime une perte potentielle sur un horizon et un niveau de confiance donnés.",
+        "intuition": "Elle répond à la question : quelle perte journalière pourrait être dépassée dans 5% des cas ?",
+        "formula": "Quantile de la distribution des rendements",
+        "practical_use": "Utile pour cadrer le risque, surtout combinée à d'autres mesures.",
+        "common_mistake": "La prendre pour une perte maximale absolue.",
+    },
+    "Sizing": {
+        "definition": "Le sizing correspond au poids attribué à chaque position en portefeuille.",
+        "intuition": "Une bonne idée mal dimensionnée peut avoir peu d'impact ; une idée fragile surdimensionnée peut coûter très cher.",
+        "formula": "Pas de formule unique : conviction, liquidité, risque et corrélation comptent.",
+        "practical_use": "C'est un levier central de performance et de gestion du risque.",
+        "common_mistake": "Dimensionner uniquement selon la conviction sans tenir compte du risque de portefeuille.",
+    },
+}
