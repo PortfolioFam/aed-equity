@@ -515,18 +515,18 @@ with nav_analysis:
                 st.dataframe(dcf_df, use_container_width=True)
                 st.info(generate_dcf_commentary(snapshot))
 
-            with tabs[3]:
-                st.markdown('<div class="subsection-title">Principaux risques</div>', unsafe_allow_html=True)
-                st.markdown(build_risk_commentary(snapshot))
+                    with tabs[3]:
+            st.markdown('<div class="subsection-title">Principaux risques</div>', unsafe_allow_html=True)
+            st.markdown(build_risk_commentary(snapshot))
 
-            with tabs[4]:
-    st.markdown('<div class="subsection-title">Conclusion</div>', unsafe_allow_html=True)
-    st.success(generate_investment_view(snapshot))
+        with tabs[4]:
+            st.markdown('<div class="subsection-title">Conclusion</div>', unsafe_allow_html=True)
+            st.success(generate_investment_view(snapshot))
 
-    st.markdown('<div class="subsection-title">Investment Memo</div>', unsafe_allow_html=True)
+            st.markdown('<div class="subsection-title">Investment Memo</div>', unsafe_allow_html=True)
 
-    if st.button("Generate Investment Memo"):
-        st.markdown(f"""
+            if st.button("Generate Investment Memo"):
+                st.markdown(f"""
 **Company:** {snapshot.get("company", ticker)}
 
 **Investment View**  
@@ -546,14 +546,14 @@ with nav_analysis:
 This memo summarizes the key elements of the investment case. Any investment decision should remain disciplined regarding valuation, downside risk and portfolio construction.
 """)
 
-    st.markdown(
-        """
+            st.markdown(
+                """
 **Cadre méthodologique**
 - Les commentaires sont produits à partir des métriques disponibles.
 - Les données manquantes sont laissées en N/D.
 - La conclusion est une lecture analytique, pas un conseil d'investissement personnalisé.
 """
-    )
+            )
 
 with nav_portfolio:
     st.markdown('<div class="section-title">Gestion de portefeuille actions</div>', unsafe_allow_html=True)
