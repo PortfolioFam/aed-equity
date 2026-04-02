@@ -491,28 +491,7 @@ with nav_analysis:
                 st.markdown('<div class="subsection-title">Principaux chiffres du compte de résultat</div>', unsafe_allow_html=True)
                 st.dataframe(build_income_statement_table(snapshot), use_container_width=True)
                 st.info(generate_income_statement_commentary(snapshot))
-st.markdown('<div class="subsection-title">Investment Memo</div>', unsafe_allow_html=True)
 
-if st.button("Generate Investment Memo"):
-    st.markdown(f"""
-**Company:** {snapshot.get("company", ticker)}
-
-**Investment View**  
-{generate_investment_view(snapshot)}
-
-**Key Financial Snapshot**
-- Price: {build_summary_metrics(snapshot).get("price", "N/D")}
-- P/E: {build_summary_metrics(snapshot).get("pe", "N/D")}
-- ROE: {build_summary_metrics(snapshot).get("roe", "N/D")}
-- Revenue growth: {build_summary_metrics(snapshot).get("revenue_growth", "N/D")}
-- Debt / Equity: {build_summary_metrics(snapshot).get("debt_to_equity", "N/D")}
-
-**Risk Considerations**  
-{build_risk_commentary(snapshot)}
-
-**Conclusion**  
-This memo summarizes the main elements of the case. Any investment decision should remain disciplined on valuation, downside risk and portfolio fit.
-""")
             with tabs[2]:
                 st.markdown('<div class="subsection-title">Valorisation</div>', unsafe_allow_html=True)
                 valuation_df = build_valuation_table(snapshot)
@@ -541,16 +520,40 @@ This memo summarizes the main elements of the case. Any investment decision shou
                 st.markdown(build_risk_commentary(snapshot))
 
             with tabs[4]:
-                st.markdown('<div class="subsection-title">Conclusion</div>', unsafe_allow_html=True)
-                st.success(generate_investment_view(snapshot))
-                st.markdown(
-                    """
-                    **Cadre méthodologique**
-                    - Les commentaires sont produits à partir des métriques disponibles.
-                    - Les données manquantes sont laissées en N/D.
-                    - La conclusion est une lecture analytique, pas un conseil d'investissement personnalisé.
-                    """
-                )
+    st.markdown('<div class="subsection-title">Conclusion</div>', unsafe_allow_html=True)
+    st.success(generate_investment_view(snapshot))
+
+    st.markdown('<div class="subsection-title">Investment Memo</div>', unsafe_allow_html=True)
+
+    if st.button("Generate Investment Memo"):
+        st.markdown(f"""
+**Company:** {snapshot.get("company", ticker)}
+
+**Investment View**  
+{generate_investment_view(snapshot)}
+
+**Key Financial Snapshot**
+- Price: {build_summary_metrics(snapshot).get("price", "N/D")}
+- P/E: {build_summary_metrics(snapshot).get("pe", "N/D")}
+- ROE: {build_summary_metrics(snapshot).get("roe", "N/D")}
+- Revenue growth: {build_summary_metrics(snapshot).get("revenue_growth", "N/D")}
+- Debt / Equity: {build_summary_metrics(snapshot).get("debt_to_equity", "N/D")}
+
+**Risk Considerations**  
+{build_risk_commentary(snapshot)}
+
+**Conclusion**  
+This memo summarizes the key elements of the investment case. Any investment decision should remain disciplined regarding valuation, downside risk and portfolio construction.
+""")
+
+    st.markdown(
+        """
+**Cadre méthodologique**
+- Les commentaires sont produits à partir des métriques disponibles.
+- Les données manquantes sont laissées en N/D.
+- La conclusion est une lecture analytique, pas un conseil d'investissement personnalisé.
+"""
+    )
 
 with nav_portfolio:
     st.markdown('<div class="section-title">Gestion de portefeuille actions</div>', unsafe_allow_html=True)
