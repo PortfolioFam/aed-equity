@@ -432,7 +432,7 @@ with nav_analysis:
 
     c1, c2 = st.columns([3, 1])
     with c1:
-        ticker = st.text_input("Ticker", value="AAPL").upper().strip()
+        ticker = st.text_input("Ticker", value="MSFT").upper().strip()
     with c2:
         run = st.button("Lancer l'analyse", type="primary")
 
@@ -488,32 +488,10 @@ with nav_analysis:
                 st.dataframe(build_income_statement_table(snapshot), use_container_width=True)
                 st.info(generate_income_statement_commentary(snapshot))
 
-                st.markdown('<div class="subsection-title">Principaux chiffres du compte de résultat</div>', unsafe_allow_html=True)
-                st.dataframe(build_income_statement_table(snapshot), use_container_width=True)
-                st.info(generate_income_statement_commentary(snapshot))
-
             with tabs[2]:
                 st.markdown('<div class="subsection-title">Valorisation</div>', unsafe_allow_html=True)
                 valuation_df = build_valuation_table(snapshot)
                 st.dataframe(valuation_df, use_container_width=True)
-
-                st.markdown('<div class="subsection-title">Lecture de la valorisation</div>', unsafe_allow_html=True)
-                st.info("Les ratios ci-dessus doivent être lus comme des repères. Ils ne remplacent ni l'analyse du secteur, ni la qualité du management, ni la soutenabilité de la croissance.")
-
-                st.markdown('<div class="subsection-title">Scénarios de valorisation actualisée</div>', unsafe_allow_html=True)
-                g1, g2, g3, g4 = st.columns(4)
-                with g1:
-                    growth = st.slider("Croissance de départ", 0.01, 0.20, 0.08, 0.01)
-                with g2:
-                    margin = st.slider("Marge de flux de trésorerie", 0.05, 0.40, 0.18, 0.01)
-                with g3:
-                    wacc = st.slider("Taux d'actualisation", 0.06, 0.14, 0.09, 0.005)
-                with g4:
-                    terminal = st.slider("Croissance à long terme", 0.01, 0.04, 0.025, 0.005)
-
-                dcf_df = dcf_scenarios(snapshot, growth, margin, wacc, terminal)
-                st.dataframe(dcf_df, use_container_width=True)
-                st.info(generate_dcf_commentary(snapshot))
 
             with tabs[3]:
                 st.markdown('<div class="subsection-title">Principaux risques</div>', unsafe_allow_html=True)
