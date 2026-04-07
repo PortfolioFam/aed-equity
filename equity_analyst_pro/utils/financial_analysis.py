@@ -258,8 +258,24 @@ def get_live_snapshot_alpha_vantage(ticker: str, api_key: str):
 
         if not history_rows:
             fallback = build_yahoo_only_snapshot(ticker)
-            if fallback is not None:
-                return fallback
+            if fallback is not None and fallback.get("history_rows"):
+                history_rows = fallback.get("history_rows", [])
+                if revenue_ttm is None:
+                    revenue_ttm = fallback.get("revenue_ttm")
+                if gross_profit_ttm is None:
+                    gross_profit_ttm = fallback.get("gross_profit_ttm")
+                if ebitda_ttm is None:
+                    ebitda_ttm = fallback.get("ebitda_ttm")
+                if operating_income_ttm is None:
+                    operating_income_ttm = fallback.get("operating_income_ttm")
+                if net_income_ttm is None:
+                    net_income_ttm = fallback.get("net_income_ttm")
+                if gross_margin_display is None:
+                    gross_margin_display = fallback.get("gross_margin")
+                if operating_margin_display is None:
+                    operating_margin_display = fallback.get("operating_margin")
+                if net_margin_display is None:
+                    net_margin_display = fallback.get("fcf_margin")
 
         return {
             "ticker": ticker.upper(),
