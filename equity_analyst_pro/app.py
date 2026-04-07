@@ -439,8 +439,18 @@ with nav_analysis:
     if run:
         snapshot = get_live_snapshot_alpha_vantage(ticker, API_KEY)
 
+        st.caption(f"Debug — API key présente: {'oui' if API_KEY else 'non'}")
+        st.caption(f"Debug — snapshot vide: {'oui' if snapshot is None else 'non'}")
+        if snapshot is not None:
+            st.caption(f"Debug — company: {snapshot.get('company')}")
+            st.caption(f"Debug — price: {snapshot.get('price')}")
+            st.caption(f"Debug — source: {snapshot.get('source')}")
+            st.caption(f"Debug — fundamentals_source: {snapshot.get('fundamentals_source')}")
+            st.caption(f"Debug — price_source: {snapshot.get('price_source')}")
+            st.caption(f"Debug — history_rows: {len(snapshot.get('history_rows', [])) if snapshot.get('history_rows') is not None else 'None'}")
+
         if snapshot is None:
-            st.error("Impossible de récupérer les données pour ce ticker. Essaie le mode démo.")
+            st.error("Impossible de récupérer les données pour ce ticker.")
         else:
             summary = build_summary_metrics(snapshot)
             st.markdown('<div class="subsection-title">Résumé exécutif</div>', unsafe_allow_html=True)
