@@ -448,6 +448,9 @@ with nav_analysis:
             st.caption(f"Debug — fundamentals_source: {snapshot.get('fundamentals_source')}")
             st.caption(f"Debug — price_source: {snapshot.get('price_source')}")
             st.caption(f"Debug — history_rows: {len(snapshot.get('history_rows', [])) if snapshot.get('history_rows') is not None else 'None'}")
+            st.caption(f"Debug — revenue_ttm: {snapshot.get('revenue_ttm')}")
+            st.caption(f"Debug — gross_margin: {snapshot.get('gross_margin')}")
+            st.caption(f"Debug — operating_margin: {snapshot.get('operating_margin')}")
 
         if snapshot is None:
             st.error("Impossible de récupérer les données pour ce ticker.")
