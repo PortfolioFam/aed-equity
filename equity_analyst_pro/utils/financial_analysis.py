@@ -1,3 +1,4 @@
+
 import numpy as np
 import pandas as pd
 import plotly.graph_objects as go
@@ -258,6 +259,7 @@ def get_live_snapshot_alpha_vantage(ticker: str, api_key: str):
 
         if not history_rows:
             fallback = build_yahoo_only_snapshot(ticker)
+            print("DEBUG FALLBACK YAHOO HISTORY_ROWS:", 0 if fallback is None else len(fallback.get("history_rows", [])))
             if fallback is not None and fallback.get("history_rows"):
                 history_rows = fallback.get("history_rows", [])
                 if revenue_ttm is None:
@@ -277,11 +279,14 @@ def get_live_snapshot_alpha_vantage(ticker: str, api_key: str):
                 if net_margin_display is None:
                     net_margin_display = fallback.get("fcf_margin")
 
+        alpha_price = _safe_float(overview.get("AnalystTargetPrice"))
+        final_price = yahoo_data["price"] if yahoo_data.get("price") is not None else alpha_price
+
         return {
             "ticker": ticker.upper(),
             "company": overview.get("Name", yahoo_data["company"]),
             "currency": yahoo_data["currency"] or overview.get("Currency", "USD"),
-            "price": yahoo_data["price"],
+            "price": final_price,
             "pe_ratio": pe_ratio,
             "roe": roe,
             "revenue_growth": quarterly_growth,
