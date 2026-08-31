@@ -2,6 +2,7 @@ import numpy as np
 import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
+import streamlit as st
 import yfinance as yf
 
 
@@ -70,6 +71,60 @@ REGION_MAP = {
     "ABI.BR": "Europe",
     "LVMUY": "Europe",
 }
+
+
+SECTOR_TRANSLATIONS = {
+    "Technology": "Technologie",
+    "Healthcare": "Santé",
+    "Financial Services": "Finance",
+    "Consumer Cyclical": "Consommation",
+    "Consumer Defensive": "Consommation défensive",
+    "Communication Services": "Communication",
+    "Industrials": "Industrie",
+    "Energy": "Énergie",
+    "Basic Materials": "Matériaux",
+    "Real Estate": "Immobilier",
+    "Utilities": "Services collectifs",
+}
+
+EUROPE_COUNTRIES = {
+    "France", "Germany", "United Kingdom", "Switzerland", "Netherlands", "Spain",
+    "Italy", "Denmark", "Sweden", "Norway", "Belgium", "Ireland", "Finland",
+    "Austria", "Portugal", "Luxembourg", "Poland",
+}
+ASIA_COUNTRIES = {
+    "China", "Japan", "South Korea", "Taiwan", "Hong Kong", "India", "Singapore",
+}
+
+
+@st.cache_data(ttl=3600, show_spinner=False)
+def get_sector_and_region(ticker: str):
+    # Recherche en direct via yfinance : couvre n'importe quel titre, pas
+    # seulement les grandes capitalisations presentes dans SECTOR_MAP/REGION_MAP.
+    # Repli sur ces tables statiques (puis "Autre") si la requete echoue.
+    try:
+        info = yf.Ticker(ticker).info or {}
+        sector_raw = info.get("sector")
+        country = info.get("country")
+
+        sector = SECTOR_TRANSLATIONS.get(sector_raw, sector_raw) if sector_raw else None
+        if country == "United States":
+            region = "États-Unis"
+        elif country in EUROPE_COUNTRIES:
+            region = "Europe"
+        elif country in ASIA_COUNTRIES:
+            region = "Asie"
+        elif country:
+            region = "Autre"
+        else:
+            region = None
+
+        if sector and region:
+            return sector, region
+    except Exception:
+        pass
+
+    return SECTOR_MAP.get(ticker, "Autre"), REGION_MAP.get(ticker, "Autre")
 
 
 def load_demo_portfolio():
@@ -223,11 +278,12 @@ def compute_portfolio_analytics(prices: pd.DataFrame, weights: np.ndarray, bench
         "Contribution au risque": risk_contrib,
     }).sort_values("Contribution au risque", ascending=False)
 
+    sectors_regions = [get_sector_and_region(t) for t in clean_cols]
     sector_df = pd.DataFrame({
         "Ligne": clean_cols,
         "Poids": weights,
-        "Secteur": [SECTOR_MAP.get(t, "Autre") for t in clean_cols],
-        "Région": [REGION_MAP.get(t, "Autre") for t in clean_cols],
+        "Secteur": [s for s, _ in sectors_regions],
+        "Région": [r for _, r in sectors_regions],
     })
 
     sector_exposure = sector_df.groupby("Secteur", as_index=False)["Poids"].sum().sort_values("Poids", ascending=False)

@@ -212,6 +212,16 @@ def get_live_snapshot_alpha_vantage(ticker: str, api_key: str):
             roe = roe / 100.0
 
         dte = _safe_float(overview.get("DebtToEquity"))
+        if dte is None:
+            # Alpha Vantage laisse souvent ce champ vide meme sur des grandes
+            # capitalisations (limitation cote donnees, pas cote ticker).
+            # On retombe sur Yahoo, deja recupere plus haut, avant le calcul bilan.
+            dte = _safe_float(info.get("debtToEquity"))
+        if dte is None:
+            try:
+                dte = _debt_to_equity_from_balance_sheet(yf.Ticker(ticker))
+            except Exception:
+                dte = None
         if dte is not None and dte > 10:
             dte = dte / 100.0
 
@@ -259,7 +269,6 @@ def get_live_snapshot_alpha_vantage(ticker: str, api_key: str):
 
         if not history_rows:
             fallback = build_yahoo_only_snapshot(ticker)
-            print("DEBUG FALLBACK YAHOO HISTORY_ROWS:", 0 if fallback is None else len(fallback.get("history_rows", [])))
             if fallback is not None and fallback.get("history_rows"):
                 history_rows = fallback.get("history_rows", [])
                 if revenue_ttm is None:
@@ -300,6 +309,7 @@ def get_live_snapshot_alpha_vantage(ticker: str, api_key: str):
             "operating_income_ttm": operating_income_ttm,
             "net_income_ttm": net_income_ttm,
             "market_cap": market_cap,
+            "shares_outstanding": _safe_float(overview.get("SharesOutstanding")) or info.get("sharesOutstanding"),
             "history_rows": history_rows,
             "source": "alpha_vantage_plus_yahoo",
             "price_source": "Yahoo Finance",
@@ -307,6 +317,25 @@ def get_live_snapshot_alpha_vantage(ticker: str, api_key: str):
         }
     except Exception:
         return build_yahoo_only_snapshot(ticker)
+
+
+def _debt_to_equity_from_balance_sheet(tk):
+    # Repli quand la source principale (Alpha Vantage OVERVIEW ou yfinance .info)
+    # ne renseigne pas la dette/capitaux propres - frequent sur ces deux sources,
+    # meme pour de grandes capitalisations. Recalcule directement depuis le bilan :
+    # Total Debt / Stockholders Equity. Retourne la meme echelle (%) que les champs
+    # .info habituels (ex. 29.1 pour 29.1%), divisee par 100 plus tard a l'affichage.
+    try:
+        bs = tk.balance_sheet
+        if bs is not None and not bs.empty:
+            latest_col = bs.columns[0]
+            total_debt = _safe_float(bs.loc["Total Debt", latest_col]) if "Total Debt" in bs.index else None
+            equity = _safe_float(bs.loc["Stockholders Equity", latest_col]) if "Stockholders Equity" in bs.index else None
+            if total_debt is not None and equity not in [None, 0]:
+                return (total_debt / equity) * 100
+    except Exception:
+        pass
+    return None
 
 
 def build_yahoo_only_snapshot(ticker: str):
@@ -318,6 +347,8 @@ def build_yahoo_only_snapshot(ticker: str):
         revenue_growth = info.get("revenueGrowth")
         roe = info.get("returnOnEquity")
         debt_to_equity = info.get("debtToEquity")
+        if debt_to_equity is None:
+            debt_to_equity = _debt_to_equity_from_balance_sheet(tk)
         gross_margin = info.get("grossMargins")
         operating_margin = info.get("operatingMargins")
         profit_margin = info.get("profitMargins")
@@ -397,6 +428,7 @@ def build_yahoo_only_snapshot(ticker: str):
             "operating_income_ttm": operating_income,
             "net_income_ttm": net_income,
             "market_cap": market_cap,
+            "shares_outstanding": info.get("sharesOutstanding"),
             "history_rows": history_rows,
             "source": "yfinance",
             "price_source": "Yahoo Finance",
@@ -789,12 +821,28 @@ def build_valuation_table(snapshot: dict):
 
 
 def dcf_scenarios(snapshot: dict, growth: float, margin: float, wacc: float, terminal: float):
-    price = snapshot.get("price") or 100
+    price = snapshot.get("price")
     currency = snapshot.get("currency", "USD")
     symbol_map = {"USD": "$", "EUR": "€", "CHF": "CHF", "DKK": "DKK", "GBP": "£"}
     currency_symbol = symbol_map.get(currency, currency)
 
-    base_revenue = 100
+    # Utilise le vrai chiffre d'affaires et le vrai nombre d'actions du titre :
+    # sans ca, la "valeur estimee" n'a aucune base de comparaison reelle avec
+    # le cours actuel (ecart artificiel, sans rapport avec une vraie survalorisation).
+    base_revenue = snapshot.get("revenue_ttm")
+    shares_outstanding = snapshot.get("shares_outstanding")
+
+    if not base_revenue or not shares_outstanding or not price:
+        return pd.DataFrame([{
+            "Scénario": "Données insuffisantes",
+            "Croissance retenue": "-",
+            "Marge de flux retenue": "-",
+            "Taux d'actualisation": "-",
+            "Croissance à long terme": "-",
+            "Valeur estimée": "N/D",
+            "Écart vs cours actuel": "Chiffre d'affaires ou nombre d'actions indisponible pour ce titre.",
+        }])
+
     scenarios = {
         "Prudent": (growth - 0.03, max(margin - 0.03, 0.05), wacc + 0.01, max(terminal - 0.005, 0.01)),
         "Central": (growth, margin, wacc, terminal),
@@ -813,7 +861,7 @@ def dcf_scenarios(snapshot: dict, growth: float, margin: float, wacc: float, ter
         pv = sum(fcf / ((1 + disc) ** (i + 1)) for i, fcf in enumerate(fcfs))
         pv_terminal = terminal_value / ((1 + disc) ** 5)
         equity_value = pv + pv_terminal
-        implied_price = equity_value / 10
+        implied_price = equity_value / shares_outstanding
         upside = (implied_price / price) - 1
 
         rows.append({
@@ -861,6 +909,46 @@ def build_risk_commentary(snapshot: dict):
 
     lines.append("- **Risque méthodologique** : cette lecture reste fondée sur des métriques agrégées. Une note d'investissement complète exigerait les publications, les échanges de résultats, le positionnement concurrentiel et l'analyse du management.")
     return "\n".join(lines)
+
+
+def generate_conclusion(snapshot: dict, dcf_df):
+    # Distincte de generate_investment_view (affichee plus haut sur la page) :
+    # celle-ci synthetise specifiquement le DCF (scenario central) et les
+    # risques identifies, pour eviter de repeter mot pour mot le meme texte
+    # dans l'onglet Conclusion.
+    company = snapshot.get("company", snapshot.get("ticker", "La société"))
+    pe = snapshot.get("pe_ratio")
+    dte = snapshot.get("debt_to_equity")
+
+    dcf_text = "l'exercice de valorisation par DCF n'a pas pu être calculé faute de données suffisantes"
+    try:
+        central_row = dcf_df[dcf_df["Scénario"] == "Central"].iloc[0]
+        dcf_value = central_row["Valeur estimée"]
+        dcf_gap = central_row["Écart vs cours actuel"]
+        dcf_text = (
+            f"le scénario central du DCF indique une valeur indicative de {dcf_value} "
+            f"(écart de {dcf_gap} par rapport au cours actuel) — un repère de sensibilité aux hypothèses, "
+            "pas une cible de prix"
+        )
+    except Exception:
+        pass
+
+    valuation_stance = "une valorisation qui n'appelle pas de lecture extrême sur les seuls multiples observés"
+    if pe is not None and pe >= 28:
+        valuation_stance = "une valorisation exigeante sur les multiples observés, qui laisse peu de marge à l'erreur"
+
+    balance_stance = "un bilan qui ne ressort pas comme un point de fragilité immédiat"
+    if dte is not None and dte > 1.5:
+        balance_stance = "un levier financier à surveiller de près"
+
+    return (
+        f"En rapprochant les différents volets de cette analyse, {company} présente {valuation_stance}, "
+        f"{balance_stance}, et {dcf_text}. "
+        "Ces éléments se complètent mais ne se substituent pas les uns aux autres : la conclusion à en tirer "
+        "dépend de l'importance relative que chaque investisseur accorde à la croissance, à la discipline "
+        "financière et à la marge de sécurité offerte par le cours actuel. "
+        "Cette synthèse reste un cadre de réflexion, pas une recommandation d'investissement personnalisée."
+    )
 
 
 def generate_investment_memo(snapshot: dict) -> dict:

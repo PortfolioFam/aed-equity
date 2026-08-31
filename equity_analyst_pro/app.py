@@ -21,6 +21,7 @@ from utils.financial_analysis import (
     dcf_scenarios,
     generate_dcf_commentary,
     build_risk_commentary,
+    generate_conclusion,
 )
 from utils.portfolio import (
     BENCHMARKS,
@@ -459,6 +460,7 @@ with nav_analysis:
                 "Business model",
                 "Fondamentaux",
                 "Valorisation",
+                "DCF (scénarios)",
                 "Risques",
                 "Conclusion",
             ])
@@ -472,34 +474,90 @@ with nav_analysis:
 
                 c1, c2, c3 = st.columns(3)
                 with c1:
-                    st.plotly_chart(build_revenue_chart(snapshot), use_container_width=True)
+                    st.plotly_chart(build_revenue_chart(snapshot), width="stretch")
                 with c2:
-                    st.plotly_chart(build_gross_margin_chart(snapshot), use_container_width=True)
+                    st.plotly_chart(build_gross_margin_chart(snapshot), width="stretch")
                 with c3:
-                    st.plotly_chart(build_operating_margin_chart(snapshot), use_container_width=True)
+                    st.plotly_chart(build_operating_margin_chart(snapshot), width="stretch")
 
                 st.markdown('<div class="subsection-title">Lecture des fondamentaux</div>', unsafe_allow_html=True)
                 st.info(generate_fundamental_commentary(snapshot))
 
                 st.markdown('<div class="subsection-title">Tableau récapitulatif</div>', unsafe_allow_html=True)
-                st.dataframe(build_fundamental_table(snapshot), use_container_width=True)
+                st.dataframe(build_fundamental_table(snapshot), width="stretch")
 
                 st.markdown('<div class="subsection-title">Principaux chiffres du compte de résultat</div>', unsafe_allow_html=True)
-                st.dataframe(build_income_statement_table(snapshot), use_container_width=True)
+                st.dataframe(build_income_statement_table(snapshot), width="stretch")
                 st.info(generate_income_statement_commentary(snapshot))
 
             with tabs[2]:
                 st.markdown('<div class="subsection-title">Valorisation</div>', unsafe_allow_html=True)
                 valuation_df = build_valuation_table(snapshot)
-                st.dataframe(valuation_df, use_container_width=True)
+                st.dataframe(
+                    valuation_df,
+                    width="stretch",
+                    hide_index=True,
+                    column_config={
+                        "Lecture": st.column_config.TextColumn("Lecture", width="large"),
+                    },
+                )
 
             with tabs[3]:
+                st.markdown('<div class="subsection-title">Valorisation par DCF (scénarios)</div>', unsafe_allow_html=True)
+                st.caption(
+                    "Exercice pédagogique de sensibilité : la valeur estimée dépend entièrement des hypothèses "
+                    "choisies ci-dessous, pas d'une projection financière détaillée de l'entreprise. "
+                    "L'objectif est de visualiser l'écart entre un scénario prudent, central et favorable."
+                )
+
+                history_rows = snapshot.get("history_rows", []) or []
+                latest_row = history_rows[-1] if history_rows else {}
+                default_growth = latest_row.get("revenue_growth")
+                default_margin = latest_row.get("operating_margin")
+
+                d1, d2, d3, d4 = st.columns(4)
+                with d1:
+                    growth_input = st.slider(
+                        "Croissance annuelle retenue",
+                        min_value=-10.0, max_value=40.0,
+                        value=round((default_growth or 0.08) * 100, 1),
+                        step=0.5, format="%.1f%%",
+                        key="dcf_growth",
+                    ) / 100
+                with d2:
+                    margin_input = st.slider(
+                        "Marge de flux retenue",
+                        min_value=1.0, max_value=45.0,
+                        value=round(max(default_margin or 0.15, 0.01) * 100, 1),
+                        step=0.5, format="%.1f%%",
+                        key="dcf_margin",
+                    ) / 100
+                with d3:
+                    wacc_input = st.slider(
+                        "Taux d'actualisation (WACC)",
+                        min_value=4.0, max_value=15.0,
+                        value=9.0, step=0.25, format="%.2f%%",
+                        key="dcf_wacc",
+                    ) / 100
+                with d4:
+                    terminal_input = st.slider(
+                        "Croissance à long terme",
+                        min_value=0.0, max_value=4.0,
+                        value=2.5, step=0.25, format="%.2f%%",
+                        key="dcf_terminal",
+                    ) / 100
+
+                dcf_df = dcf_scenarios(snapshot, growth_input, margin_input, wacc_input, terminal_input)
+                st.dataframe(dcf_df, width="stretch", hide_index=True)
+                st.info(generate_dcf_commentary(snapshot))
+
+            with tabs[4]:
                 st.markdown('<div class="subsection-title">Principaux risques</div>', unsafe_allow_html=True)
                 st.markdown(build_risk_commentary(snapshot))
 
-            with tabs[4]:
+            with tabs[5]:
                 st.markdown('<div class="subsection-title">Conclusion</div>', unsafe_allow_html=True)
-                st.success(generate_investment_view(snapshot))
+                st.success(generate_conclusion(snapshot, dcf_df))
                 st.markdown(
                     """
                     **Cadre méthodologique**
@@ -515,7 +573,7 @@ with nav_portfolio:
     c1, c2 = st.columns([3, 1])
     with c1:
         default_df = load_demo_portfolio()
-        edited = st.data_editor(default_df, num_rows="dynamic", use_container_width=True)
+        edited = st.data_editor(default_df, num_rows="dynamic", width="stretch")
     with c2:
         benchmark_name = st.selectbox("Benchmark", list(BENCHMARKS.keys()))
         benchmark_symbol = BENCHMARKS[benchmark_name]
@@ -567,43 +625,43 @@ with nav_portfolio:
             with tabs[0]:
                 st.markdown('<div class="subsection-title">Portefeuille vs benchmark</div>', unsafe_allow_html=True)
                 if analytics["relative_chart"] is not None:
-                    st.plotly_chart(analytics["relative_chart"], use_container_width=True)
+                    st.plotly_chart(analytics["relative_chart"], width="stretch")
                 else:
-                    st.plotly_chart(analytics["cum_chart"], use_container_width=True)
+                    st.plotly_chart(analytics["cum_chart"], width="stretch")
 
                 st.markdown('<div class="subsection-title">Composition du portefeuille</div>', unsafe_allow_html=True)
-                st.dataframe(analytics["composition_df"], use_container_width=True)
+                st.dataframe(analytics["composition_df"], width="stretch")
 
                 c1, c2 = st.columns(2)
                 with c1:
                     st.markdown('<div class="subsection-title">Contribution à la performance</div>', unsafe_allow_html=True)
-                    st.dataframe(analytics["contrib_perf_df"], use_container_width=True)
+                    st.dataframe(analytics["contrib_perf_df"], width="stretch")
                 with c2:
                     st.markdown('<div class="subsection-title">Contribution au risque</div>', unsafe_allow_html=True)
-                    st.dataframe(analytics["contrib_risk_df"], use_container_width=True)
+                    st.dataframe(analytics["contrib_risk_df"], width="stretch")
 
             with tabs[1]:
                 st.markdown('<div class="subsection-title">Exposition sectorielle</div>', unsafe_allow_html=True)
-                st.plotly_chart(analytics["sector_chart"], use_container_width=True)
-                st.dataframe(analytics["sector_exposure"], use_container_width=True)
+                st.plotly_chart(analytics["sector_chart"], width="stretch")
+                st.dataframe(analytics["sector_exposure"], width="stretch")
 
                 st.markdown('<div class="subsection-title">Exposition géographique</div>', unsafe_allow_html=True)
-                st.plotly_chart(analytics["region_chart"], use_container_width=True)
-                st.dataframe(analytics["region_exposure"], use_container_width=True)
+                st.plotly_chart(analytics["region_chart"], width="stretch")
+                st.dataframe(analytics["region_exposure"], width="stretch")
 
             with tabs[2]:
                 st.markdown('<div class="subsection-title">Mesures de risque</div>', unsafe_allow_html=True)
-                st.dataframe(analytics["risk_table"], use_container_width=True)
+                st.dataframe(analytics["risk_table"], width="stretch")
 
             with tabs[3]:
                 st.markdown('<div class="subsection-title">Matrice de corrélation</div>', unsafe_allow_html=True)
-                st.plotly_chart(analytics["corr_chart"], use_container_width=True)
+                st.plotly_chart(analytics["corr_chart"], width="stretch")
 
             with tabs[4]:
                 st.markdown('<div class="subsection-title">Frontière efficiente simulée</div>', unsafe_allow_html=True)
                 frontier = simulate_efficient_frontier(prices, n_portfolios=2000)
-                st.plotly_chart(frontier["chart"], use_container_width=True)
-                st.dataframe(frontier["top_portfolios"], use_container_width=True)
+                st.plotly_chart(frontier["chart"], width="stretch")
+                st.dataframe(frontier["top_portfolios"], width="stretch")
 
 with nav_pedagogy:
     st.markdown('<div class="section-title">Base pédagogique — Gérant actions</div>', unsafe_allow_html=True)
