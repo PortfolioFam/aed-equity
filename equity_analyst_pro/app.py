@@ -45,7 +45,7 @@ st.markdown(
         @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Inter:wght@400;500;600&display=swap');
 
         .stApp {
-            background: linear-gradient(180deg, #f8f6f1 0%, #f2efe8 100%);
+            background: #f6f4ef;
             color: #0f172a;
             font-family: 'Inter', sans-serif;
         }
@@ -91,20 +91,19 @@ st.markdown(
         }
 
         .hero-card {
-            background: linear-gradient(135deg, #0b1a2b 0%, #16283d 100%);
-            padding: 2.2rem;
-            border-radius: 22px;
+            background: #0f1e30;
+            padding: 2rem 2.2rem;
+            border-radius: 8px;
             color: #f8f6f1;
-            border: 1px solid rgba(176, 139, 64, 0.22);
-            box-shadow: 0 24px 48px rgba(11, 26, 43, 0.18);
+            border: 1px solid rgba(176, 139, 64, 0.18);
             margin-bottom: 1.4rem;
         }
 
         .hero-title {
             font-family: 'Cormorant Garamond', serif;
-            font-size: 3.2rem;
-            font-weight: 700;
-            line-height: 1.02;
+            font-size: 2.6rem;
+            font-weight: 600;
+            line-height: 1.05;
             margin-bottom: 0.55rem;
             color: #f7f2e8;
         }
@@ -135,20 +134,18 @@ st.markdown(
         }
 
         .glass-card {
-            background: rgba(255,255,255,0.78);
-            border: 1px solid rgba(11, 26, 43, 0.08);
-            border-radius: 18px;
+            background: #ffffff;
+            border: 1px solid rgba(11, 26, 43, 0.10);
+            border-radius: 8px;
             padding: 1.2rem 1.2rem 1rem 1.2rem;
-            box-shadow: 0 10px 26px rgba(11, 26, 43, 0.05);
             margin-bottom: 1rem;
         }
 
         .quote-card {
             background: #fcfaf5;
-            border-left: 4px solid #b08b40;
-            border-radius: 14px;
+            border-left: 3px solid #b08b40;
+            border-radius: 4px;
             padding: 1rem 1.1rem;
-            box-shadow: 0 6px 18px rgba(11, 26, 43, 0.04);
             color: #0b1a2b;
             margin-bottom: 0.8rem;
         }
@@ -160,23 +157,22 @@ st.markdown(
 
         .pill {
             display: inline-block;
-            padding: 0.38rem 0.72rem;
-            border-radius: 999px;
-            background: rgba(176, 139, 64, 0.12);
-            color: #7a5b21;
+            padding: 0.3rem 0.6rem;
+            border-radius: 4px;
+            background: transparent;
+            color: #6b5730;
             font-size: 0.8rem;
             font-weight: 600;
             margin-right: 0.45rem;
             margin-bottom: 0.45rem;
-            border: 1px solid rgba(176, 139, 64, 0.18);
+            border: 1px solid rgba(176, 139, 64, 0.35);
         }
 
         div[data-testid="metric-container"] {
-            background: rgba(255,255,255,0.82);
-            border: 1px solid rgba(11, 26, 43, 0.08);
+            background: #ffffff;
+            border: 1px solid rgba(11, 26, 43, 0.10);
             padding: 0.95rem;
-            border-radius: 16px;
-            box-shadow: 0 6px 18px rgba(11, 26, 43, 0.04);
+            border-radius: 8px;
         }
 
         div[data-testid="metric-container"] label {
@@ -200,20 +196,18 @@ st.markdown(
         }
 
         div.stButton > button {
-            background: linear-gradient(135deg, #0b1a2b 0%, #16283d 100%);
+            background: #0f1e30;
             color: #f8f6f1;
             border: 1px solid rgba(176, 139, 64, 0.35);
-            border-radius: 12px;
+            border-radius: 6px;
             padding: 0.62rem 1.2rem;
             font-weight: 600;
-            box-shadow: 0 8px 18px rgba(11, 26, 43, 0.12);
-            transition: all 0.2s ease;
+            transition: background 0.15s ease;
         }
 
         div.stButton > button:hover {
-            border: 1px solid rgba(176, 139, 64, 0.65);
-            box-shadow: 0 10px 22px rgba(11, 26, 43, 0.18);
-            transform: translateY(-1px);
+            background: #16283d;
+            border: 1px solid rgba(176, 139, 64, 0.55);
             color: #ffffff;
         }
 
@@ -221,21 +215,19 @@ st.markdown(
         div[data-baseweb="input"] > div,
         .stTextInput > div > div,
         .stNumberInput > div > div {
-            background: rgba(255,255,255,0.82) !important;
-            border-radius: 12px !important;
-            border: 1px solid rgba(11, 26, 43, 0.10) !important;
-            box-shadow: 0 4px 12px rgba(11, 26, 43, 0.03) !important;
+            background: #ffffff !important;
+            border-radius: 6px !important;
+            border: 1px solid rgba(11, 26, 43, 0.14) !important;
         }
 
         .stDataFrame, .stTable {
-            border-radius: 16px;
+            border-radius: 6px;
             overflow: hidden;
-            border: 1px solid rgba(11, 26, 43, 0.08);
-            box-shadow: 0 10px 24px rgba(11, 26, 43, 0.04);
+            border: 1px solid rgba(11, 26, 43, 0.12);
         }
 
         [data-testid="stDataFrame"] div[role="grid"] {
-            border-radius: 16px;
+            border-radius: 6px;
         }
 
         [data-testid="stDataFrame"] [role="columnheader"] {
@@ -246,22 +238,20 @@ st.markdown(
         }
 
         [data-testid="stDataFrame"] [role="gridcell"] {
-            background: rgba(255,255,255,0.92) !important;
+            background: #ffffff !important;
             color: #253241 !important;
-            border-bottom: 1px solid rgba(11, 26, 43, 0.05) !important;
+            border-bottom: 1px solid rgba(11, 26, 43, 0.06) !important;
         }
 
         [data-testid="stDataEditor"] {
-            border-radius: 16px;
+            border-radius: 6px;
             overflow: hidden;
-            border: 1px solid rgba(11, 26, 43, 0.08);
-            box-shadow: 0 10px 24px rgba(11, 26, 43, 0.04);
+            border: 1px solid rgba(11, 26, 43, 0.12);
         }
 
         .stAlert {
-            border-radius: 16px !important;
-            border: 1px solid rgba(11, 26, 43, 0.08) !important;
-            box-shadow: 0 8px 20px rgba(11, 26, 43, 0.04) !important;
+            border-radius: 6px !important;
+            border: 1px solid rgba(11, 26, 43, 0.10) !important;
         }
 
         .stInfo {
